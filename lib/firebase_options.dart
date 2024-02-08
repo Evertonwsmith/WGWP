@@ -21,11 +21,20 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return android;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for android - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.iOS:
-        return ios;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for ios - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -51,31 +60,5 @@ class DefaultFirebaseOptions {
     authDomain: 'wordgamewithpals.firebaseapp.com',
     storageBucket: 'wordgamewithpals.appspot.com',
     measurementId: 'G-1NCKFZWYT0',
-  );
-
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBP9WUGLVzehGUc1YyQKpsB8Qdo562HIyk',
-    appId: '1:541477768814:android:2c5d4268a10f591103a07f',
-    messagingSenderId: '541477768814',
-    projectId: 'wordgamewithpals',
-    storageBucket: 'wordgamewithpals.appspot.com',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyB3DxngyVyxo3_jyUSOQ8JYbiLvkIwKDAY',
-    appId: '1:541477768814:ios:5907f1d8a0e5e8c503a07f',
-    messagingSenderId: '541477768814',
-    projectId: 'wordgamewithpals',
-    storageBucket: 'wordgamewithpals.appspot.com',
-    iosBundleId: 'com.example.wordgamewithpals',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyB3DxngyVyxo3_jyUSOQ8JYbiLvkIwKDAY',
-    appId: '1:541477768814:ios:4272760ad5771ba003a07f',
-    messagingSenderId: '541477768814',
-    projectId: 'wordgamewithpals',
-    storageBucket: 'wordgamewithpals.appspot.com',
-    iosBundleId: 'com.example.wordgamewithpals.RunnerTests',
   );
 }
