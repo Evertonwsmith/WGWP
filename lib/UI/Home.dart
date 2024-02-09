@@ -23,64 +23,109 @@ class _HomeState extends State<Home> {
   bool gamesLoaded = false;
 
   List<game> games = [];
+  List<game> oldGames = [];
+  List<game> oldChallenges = [];
+
   List<int> ids = [];
 
   bool notifs = false;
+  String itemName = '';
+
+  void getOldGames() async {
+    oldGames = await load().getGames(this.widget.user, false);
+    oldChallenges = await load().getChallenges(this.widget.user, false);
+  }
 
   void getGames() async {
-    games = await load().getGames(this.widget.user);
+    games = await load().getGames(this.widget.user, true);
     ids = await load().getIds(this.widget.user);
-    if(games.length > 0) {
+    if (games.length > 0) {
       setState(() {
         notifs = true;
       });
-
-
-    }else{
+    } else {
       setState(() {
         notifs = false;
       });
     }
   }
-bool init = true;
+
+  bool init = true;
+
   @override
   Widget build(BuildContext context) {
-    if(init) {
+    if (init) {
       getGames();
-    init = false;
+      init = false;
     }
+    getOldGames();
     return Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: Icon(Icons.login_outlined),
-            onPressed: () {
-              logout(context);
-            }
-          ),
+              icon: Icon(Icons.login_outlined),
+              onPressed: () {
+                logout(context);
+              }),
+          bottom: PreferredSize(
+              preferredSize: Size.fromHeight(50),
+              child: Center(
+                child: Text(itemName),
+              )),
           title: Text('Welcome ${widget.user}'),
         ),
         body: Center(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              IconButton(
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => NewGame()));
-                  },
-                  icon: Icon(Icons.add_circle_outline)),
-              IconButton(
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => ActiveGames(games: games, ids: ids)));
-                  },
-                  icon: Icon(Icons.notification_important_outlined,color: notifs ? Colors.red : Colors.black)),
+              GestureDetector(
+                onLongPress: () {
+                  setState(() {
+                    itemName = 'New Game';
+                  });
+                },
+                onLongPressUp: () {
+                  setState(() {
+                    itemName = '';
+                  });
+                },
+                child: IconButton(
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => NewGame()));
+                    },
+                    icon: Icon(Icons.add_circle_outline)),
+              ),
+              GestureDetector(
+                onLongPress: () {
+                  setState(() {
+                    itemName = 'Challenges';
+                  });
+                },
+                onLongPressUp: () {
+                  setState(() {
+                    itemName = '';
+                  });
+                },
+                child: IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  ActiveGames(games: games, ids: ids)));
+                    },
+                    icon: Icon(Icons.notification_important_outlined,
+                        color: notifs ? Colors.red : Colors.white)),
+              ),
               IconButton(
                   onPressed: () {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => InactiveGames()));
+                            builder: (context) => InactiveGames(
+                                  oldgames: oldGames,
+                                  oldchallenges: oldChallenges,
+                                )));
                   },
                   icon: Icon(Icons.drive_folder_upload)),
               IconButton(

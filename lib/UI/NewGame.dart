@@ -58,72 +58,83 @@ class _NewGameState extends State<NewGame> {
         title: Text('New Game'),
       ),
       body: Center(
-        child: Form(
-          child: Column(children: [
-            Text('How Many Guesses?'),
-            TextField(
-              keyboardType: TextInputType.number,
-              controller: guessLength,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp('[4-7]')),
-                LengthLimitingTextInputFormatter(1),
-              ],
-            ),
-            Text('Enter your word, between 4 and 6 letters'),
-            TextField(
-              keyboardType: TextInputType.text,
-              controller: word,
-            ),
-            SizedBox(height: 10),
-            loaded
-                ? DropdownMenu(
-                    dropdownMenuEntries: items,
-                    controller: drdnController,
-                  )
-                : CircularProgressIndicator(),
-            SizedBox(height: 10),
-            IconButton(
-                icon: Icon(Icons.send_time_extension_outlined),
-                onPressed: () {
-                  if (int.parse(guessLength.text) < 3 ||
-                      int.parse(guessLength.text) > 7) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Please enter a number between 3 and 7'),
-                      ),
-                    );
-                  } else if (4 > word.text.length || word.text.length > 7) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content:
-                            Text('Please enter a word between 4 and 6 letters'),
-                      ),
-                    );
-                  } else if (drdnController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Please select a user'),
-                      ),
-                    );
-                  } else {
-                    sendNewGame(context, int.parse(guessLength.text), word.text,
-                        drdnController.text);
-                  }
-                })
-          ]),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.6,
+          child: Form(
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text('How Many Guesses?'),
+              TextField(
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.number,
+                controller: guessLength,
+                decoration: InputDecoration(
+                  labelText: 'Number of Guesses',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp('[4-7]')),
+                  LengthLimitingTextInputFormatter(1),
+                ],
+              ),
+              Text('Enter your word, between 4 and 6 letters'),
+              TextField(
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.text,
+                controller: word,
+              ),
+              SizedBox(height: 10),
+              loaded
+                  ? DropdownMenu(
+                      dropdownMenuEntries: items,
+                      controller: drdnController,
+                    )
+                  : CircularProgressIndicator(),
+              SizedBox(height: 10),
+              IconButton(
+                  icon: Icon(Icons.send_time_extension_outlined),
+                  onPressed: () {
+                    if (int.parse(guessLength.text) < 3 ||
+                        int.parse(guessLength.text) > 7) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please enter a number between 3 and 7'),
+                        ),
+                      );
+                    } else if (4 > word.text.length || word.text.length > 7) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content:
+                              Text('Please enter a word between 4 and 6 letters'),
+                        ),
+                      );
+                    } else if (drdnController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please select a user'),
+                        ),
+                      );
+                    } else {
+                      sendNewGame(context, int.parse(guessLength.text), word.text,
+                          drdnController.text);
+                    }
+                  })
+            ]),
+          ),
         ),
       ),
     );
   }
 }
 
-void sendNewGame(BuildContext context, int guesses, String word, String chlngd) async {
+void sendNewGame(
+    BuildContext context, int guesses, String word, String chlngd) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   String? user = prefs.getString('user');
-  print("USER: "+user!);
-  game newGame =
-      game(word, word.length, guesses, 0,
-          false, true, DateTime.now(), chlngd, user, []);
+  print("USER: " + user!);
+  game newGame = game(word, word.length, guesses, 0, false, true,
+      DateTime.now().toString().substring(0,10), chlngd, user, []);
   save().saveGame(newGame, -1);
   Navigator.pushReplacement(
     context,

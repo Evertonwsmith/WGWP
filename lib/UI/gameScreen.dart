@@ -28,59 +28,79 @@ class _gameScreenState extends State<gameScreen> {
     print(thisGame.gused.toString());
     print(thisGame.glength.toString());
     return thisGame.active
-        ? Scaffold(
-            appBar: AppBar(
-              title: Text('WordGameWithPals!'),
-              centerTitle: true,
-            ),
-            body: Column(
-              children: [
-                Expanded(
-                  flex: 6,
-                  child: Column(
-                    children: getLttrRows(context),
-                  ),
-                ),
-                Expanded(
+        ? SafeArea(
+          child: Scaffold(
+              appBar: AppBar(
+                title: Text('WordGameWithPals!'),
+                centerTitle: true,
+                bottom: PreferredSize(
+                  preferredSize: Size.fromHeight(30),
+                  child: Center(child: Text("Guesses Used: " + thisGame.gused.toString() + "/"+ thisGame.glength.toString()),)
+                )
+              ),
+              body: Column(
+                children: [
+                  Expanded(
+                    flex: 6,
                     child: Column(
-                  children: [
-                    TextField(
-                      onEditingComplete:()=>
-                          setState(() {
-                            currentGuess = mainController.text;
-                          }),
-                      controller: mainController,
-                      decoration: InputDecoration(
-                        hintText: 'Enter a guess',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                          borderSide:
-                              BorderSide(color: Colors.black, width: 1.0),
+                      children:getLttrRows(context),
+                    ),
+                  ),
+                  Expanded(
+                      child: Column(
+                    children: [
+                      TextField(
+                        onEditingComplete:()=>
+                            setState(() {
+                              currentGuess = mainController.text;
+                            }),
+                        controller: mainController,
+                        decoration: InputDecoration(
+                          hintText: 'Enter a guess',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                            borderSide:
+                                BorderSide(color: Colors.black, width: 1.0),
+                          ),
                         ),
                       ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        enterGuess(mainController.text);
-                      },
-                      child: Text('Enter Guess'),
-                    ),
+                      ElevatedButton(
+                        onPressed: () {
+                          if(mainController.text.length != thisGame.wlength){
+                            ScaffoldMessenger.of(context)
+                             .showSnackBar(SnackBar(content: Text('Wrong length')));
+                            return;
+                          }else {
+                            enterGuess(mainController.text);
+                          }},
+                        child: Text('Enter Guess'),
+                      ),
+                    ],
+                  ))
+                ],
+              )),
+        )
+        : SafeArea(
+          child: Scaffold(
+              appBar: AppBar(
+                title: Text('WordGameWithPals!'),
+                centerTitle: true,
+              ),
+              body: Center(
+                child: Column(
+                  children: [
+                    Text(thisGame.win ? "You won!" : "You lost!"),
+                    Text('Word was: ${thisGame.word}'),
                   ],
-                ))
-              ],
-            ))
-        : Scaffold(
-            appBar: AppBar(
-              title: Text('WordGameWithPals!'),
-              centerTitle: true,
+                ),
+              ),
             ),
-            body: Center(
-              child: Text(thisGame.win ? "You won!" : "You lost!"),
-            ),
-          );
+        );
   }
 
   getLttrRows(BuildContext context) {
+    double wdth = MediaQuery.
+    of(context).size.width / thisGame.wlength;
     List<Widget> rows = [];
     for (int j = 0; j < thisGame.guesses.length; j++) {
       List<Container> lttrs = [];
@@ -106,7 +126,7 @@ class _gameScreenState extends State<gameScreen> {
           //     yl = true;
           //   }
           // } else {
-          //   textToShow = '';
+            textToShow = '*';
           // }
         } else if (j > thisGame.gused && j < thisGame.guesses.length) {
           if (i < thisGame.guesses[j].length) {
@@ -123,8 +143,8 @@ class _gameScreenState extends State<gameScreen> {
           textToShow = '';
         }
         lttrs.add(Container(
-          width: 100,
-          height: 100,
+          width: wdth * .9,
+          height: wdth * .9,
           decoration: BoxDecoration(
             color: gr
                 ? Colors.green
@@ -157,11 +177,12 @@ class _gameScreenState extends State<gameScreen> {
     game sv = widget.currentGame;
     sv.gused++;
     sv.guesses.add(guess);
+    if (guess == widget.currentGame.word) {
+      sv.win = true;
+      sv.active = false;
+    }
     if (sv.guesses.length == widget.currentGame.glength) {
       sv.active = false;
-      if (guess == widget.currentGame.word) {
-        sv.win = true;
-      }
     }
     save().saveGame(sv, widget.id);
     setState(() {

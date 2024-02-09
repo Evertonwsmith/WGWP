@@ -4,13 +4,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wordgamewithpals/model/game.dart';
 
 class load {
-  Future<DocumentReference?> generalLoad(
-      String collection, String document, String identifier) async {
+  Future<DocumentReference?> generalLoad(String collection, String document,
+      String identifier) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     DocumentReference newRef = firestore.collection(collection).doc(document);
-    newRef.get().then((value) => () {
-          return value.get('user') == null ? null : value;
-        });
+    newRef.get().then((value) =>
+        () {
+      return value.get('user') == null ? null : value;
+    });
   }
 
   Future<int> getGameCount() async {
@@ -40,14 +41,14 @@ class load {
     return users;
   }
 
-  Future<List<game>> getGames(String user) async {
+  Future<List<game>> getGames(String user, bool status) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     try {
       QuerySnapshot querySnapshot = await firestore
           .collection('games')
           .where('challenged', isEqualTo: user)
-          .where('active', isEqualTo: true)
+          .where('active', isEqualTo: status)
           .get();
 
       List<game> games = querySnapshot.docs.map((doc) {
@@ -88,6 +89,38 @@ class load {
       }).toList();
 
       return ids;
+    } catch (e) {
+      print('Error getting games: $e');
+      return []; // Return an empty list if an error occurs
+    }
+  }
+
+  Future<List<game>> getChallenges(String user, bool status) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    try {
+      QuerySnapshot querySnapshot = await firestore
+          .collection('games')
+          .where('creator', isEqualTo: user)
+          .where('active', isEqualTo: status)
+          .get();
+
+      List<game> games = querySnapshot.docs.map((doc) {
+        // Convert each document to a Game object
+        return game(
+            doc.get('word'),
+            doc.get('wlength'),
+            doc.get('glength'),
+            doc.get('gused'),
+            doc.get('win'),
+            doc.get('active'),
+            doc.get('date'),
+            doc.get('challenged'),
+            doc.get('creator'),
+            doc.get('guesses'));
+      }).toList();
+
+      return games;
     } catch (e) {
       print('Error getting games: $e');
       return []; // Return an empty list if an error occurs
