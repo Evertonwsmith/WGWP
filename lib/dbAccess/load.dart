@@ -1,11 +1,13 @@
 import 'dart:js_interop';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:wordgamewithpals/model/dailyGame.dart';
 import 'package:wordgamewithpals/model/game.dart';
+import 'package:wordgamewithpals/model/userLeaderboard.dart';
 
 class load {
-  Future<DocumentReference?> generalLoad(String collection, String document,
-      String identifier) async {
+  Future<DocumentReference?> generalLoad(String collection,
+      String document) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     DocumentReference newRef = firestore.collection(collection).doc(document);
     newRef.get().then((value) =>
@@ -124,6 +126,52 @@ class load {
     } catch (e) {
       print('Error getting games: $e');
       return []; // Return an empty list if an error occurs
+    }
+  }
+
+  Future<userLBInfo?> loadUser(user) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    DocumentReference newRef = firestore.collection('leaderboard').doc(user);
+
+    try {
+      DocumentSnapshot snapshot = await newRef.get();
+      if (snapshot.exists) {
+        return userLBInfo(
+          snapshot.get('user'),
+          snapshot.get('wins'),
+          snapshot.get('losses'),
+          snapshot.get('points'),
+          snapshot.get('dailyChallenges'),
+        );
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error loading user: $e');
+      return null;
+    }
+  }
+
+
+  Future<dailyGame?> getDailyGame() async{
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    print("*********************"+DateTime.now().toString().substring(0,10));
+    DocumentReference newRef = firestore.collection('dailyChallenge').doc(DateTime.now().toString().substring(0,10));
+
+    try {
+      DocumentSnapshot doc = await newRef.get();
+      if (doc.exists) {
+        return dailyGame(
+            doc.get('word'),
+            doc.get('winners'),
+            doc.get('losers'),
+        doc.get('guesses'));
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error loading user: $e');
+      return null;
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:wordgamewithpals/UI/Settings.dart';
 import 'package:wordgamewithpals/UI/gameTheme.dart';
 import 'package:wordgamewithpals/firebase_options.dart';
 import 'package:wordgamewithpals/landing.dart';

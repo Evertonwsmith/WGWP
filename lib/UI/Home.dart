@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wordgamewithpals/Login.dart';
 import 'package:wordgamewithpals/UI/ActiveGames.dart';
+import 'package:wordgamewithpals/UI/DailyChallenge.dart';
 import 'package:wordgamewithpals/UI/InactiveGames.dart';
 import 'package:wordgamewithpals/UI/NewGame.dart';
 import 'package:wordgamewithpals/UI/Profile.dart';
@@ -21,13 +22,10 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool gamesLoaded = false;
-
   List<game> games = [];
   List<game> oldGames = [];
   List<game> oldChallenges = [];
-
   List<int> ids = [];
-
   bool notifs = false;
   String itemName = '';
 
@@ -61,6 +59,7 @@ class _HomeState extends State<Home> {
     getOldGames();
     return Scaffold(
         appBar: AppBar(
+          toolbarHeight: 100,
           leading: IconButton(
               icon: Icon(Icons.login_outlined),
               onPressed: () {
@@ -72,74 +71,92 @@ class _HomeState extends State<Home> {
                 child: Text(itemName),
               )),
           title: Text('Welcome ${widget.user}'),
+          centerTitle: true,
         ),
         body: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              GestureDetector(
-                onLongPress: () {
-                  setState(() {
-                    itemName = 'New Game';
-                  });
-                },
-                onLongPressUp: () {
-                  setState(() {
-                    itemName = '';
-                  });
-                },
-                child: IconButton(
-                    onPressed: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => NewGame()));
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+
+            children: [              SizedBox(height: 100),
+
+              ElevatedButton(onPressed:(){
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => DailyChallenge(user: widget.user)));
+
+              }
+
+                  , child: Text('Daily Challenge')),
+              SizedBox(height: 100),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  GestureDetector(
+                    onLongPress: () {
+                      setState(() {
+                        itemName = 'New Game';
+                      });
                     },
-                    icon: Icon(Icons.add_circle_outline)),
-              ),
-              GestureDetector(
-                onLongPress: () {
-                  setState(() {
-                    itemName = 'Challenges';
-                  });
-                },
-                onLongPressUp: () {
-                  setState(() {
-                    itemName = '';
-                  });
-                },
-                child: IconButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  ActiveGames(games: games, ids: ids)));
+                    onLongPressUp: () {
+                      setState(() {
+                        itemName = '';
+                      });
                     },
-                    icon: Icon(Icons.notification_important_outlined,
-                        color: notifs ? Colors.red : Colors.white)),
+                    child: IconButton(
+                        onPressed: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) => NewGame()));
+                        },
+                        icon: Icon(Icons.add_circle_outline)),
+                  ),
+                  GestureDetector(
+                    onLongPress: () {
+                      setState(() {
+                        itemName = 'Challenges';
+                      });
+                    },
+                    onLongPressUp: () {
+                      setState(() {
+                        itemName = '';
+                      });
+                    },
+                    child: IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      ActiveGames(games: games, ids: ids)));
+                        },
+                        icon: Icon(Icons.notification_important_outlined,
+                            color: notifs ? Colors.red : Colors.white70)),
+                  ),
+                  IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => InactiveGames(
+                                      oldgames: oldGames,
+                                      oldchallenges: oldChallenges,
+                                    )));
+                      },
+                      icon: Icon(Icons.drive_folder_upload)),
+                  IconButton(
+                      onPressed: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => Settings()));
+                      },
+                      icon: Icon(Icons.settings_applications_outlined)),
+                  IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Profile(user: widget.user)));
+                      },
+                      icon: Icon(Icons.person_2_outlined)),
+                ],
               ),
-              IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => InactiveGames(
-                                  oldgames: oldGames,
-                                  oldchallenges: oldChallenges,
-                                )));
-                  },
-                  icon: Icon(Icons.drive_folder_upload)),
-              IconButton(
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => Settings()));
-                  },
-                  icon: Icon(Icons.settings_applications_outlined)),
-              IconButton(
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => Profile()));
-                  },
-                  icon: Icon(Icons.person_2_outlined)),
             ],
           ),
         ));

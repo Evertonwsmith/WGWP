@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wordgamewithpals/dbAccess/load.dart';
+import 'package:wordgamewithpals/model/dailyGame.dart';
 import 'package:wordgamewithpals/model/game.dart';
 import 'package:wordgamewithpals/model/userLeaderboard.dart';
 
 class save {
-  Future<void> generalSave(String collection, String document,
-      Map<String, dynamic> data) async {
+  Future<void> generalSave(
+      String collection, String document, Map<String, dynamic> data) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     QuerySnapshot ref = await firestore.collection(collection).get();
     DocumentReference newRef = firestore.collection(collection).doc(document);
@@ -42,10 +43,26 @@ class save {
       throw e; // Re-throw the exception to handle it in the caller function if needed
     }
   }
+
+  Future<void> saveDaily(String user, dailyGame sv) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    DocumentReference newRef = await firestore
+        .collection('dailyChallenge')
+        .doc(DateTime.now().toString().substring(0, 10));
+    DocumentSnapshot doc = await newRef.get();
+    List<String> winners = doc.get('winners');
+    List<String> losers = doc.get('losers');
+    // if (!sv.active) {
+    //   sv.win ? winners.add(user) : losers.add(user);
+    //   // doc.set({'winners', winners});
+    //   await firestore.collection('dailyChallenge').doc(DateTime.now().toString().substring(0,10)).set({
+    //     'winners' : winners,
+    //     'losers' : losers,
+    //   });
+  }
 }
 
 Future<void> updateLeaderboards(game game, FirebaseFirestore firestore) async {
-
   QuerySnapshot querySnapshot = await firestore
       .collection('leaderboard')
       .where('user', isEqualTo: game.challenged)
@@ -56,25 +73,22 @@ Future<void> updateLeaderboards(game game, FirebaseFirestore firestore) async {
       'user': game.challenged,
       'wins': 0,
       'losses': 0,
-      'points': 0
+      'points': 0,
+      'dailyChallenges': 0
     });
     querySnapshot = await firestore
         .collection('leaderboard')
         .where('user', isEqualTo: game.challenged)
         .get();
   }
-    List<userLBInfo> userLBinfos = querySnapshot.docs.map((doc) {
-      return userLBInfo(
-          doc.get('user'),
-        doc.get('wins'),
-        doc.get('losses'),
-        doc.get('points')
-      );
-    }).toList();
+  List<userLBInfo> userLBinfos = querySnapshot.docs.map((doc) {
+    return userLBInfo(doc.get('user'), doc.get('wins'), doc.get('losses'),
+        doc.get('points'), doc.get('dailyChallenges'));
+  }).toList();
   userLBInfo current = userLBinfos[0];
-  if(game.win){
+  if (game.win) {
     current.wins++;
-    switch(game.wlength) {
+    switch (game.wlength) {
       case 4:
         current.points += 10;
         break;
@@ -85,18 +99,15 @@ Future<void> updateLeaderboards(game game, FirebaseFirestore firestore) async {
         current.points += 20;
         break;
 
-
         break;
       default:
     }
-
-
-  }else{
+  } else {
     current.losses++;
     current.points += 1;
   }
-
-
-  print('Document updated successfully');
+  await firestore
+      .collection('leaderboard')
+      .doc(game.challenged)
+      .set({'points': current.points});
 }
-
