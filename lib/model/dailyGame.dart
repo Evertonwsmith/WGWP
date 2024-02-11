@@ -1,8 +1,20 @@
 class dailyGame {
   String word;
-  List<String> winners;
-  List<String> losers;
-  List<String> guesses;
+  int wlength;
+  int glength;
+  int gused;
+  bool win;
+  bool active;
+  dynamic date;
+  String challenged;
+  String creator;
+  List<dynamic> guesses;
 
-  dailyGame(this.word, this.winners, this.losers, this.guesses);
+  dailyGame(this.word, this.wlength, this.glength, this.gused, this.win, this.active,
+      this.date,this.challenged,this.creator,this.guesses);
+
+// Home({super.key, required this.user});
+
+
+
 }

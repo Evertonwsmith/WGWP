@@ -6,8 +6,9 @@ import 'package:wordgamewithpals/model/game.dart';
 class gameScreen extends StatefulWidget {
   final game currentGame;
   final int id;
+  final bool daily;
 
-  gameScreen({super.key, required this.currentGame, required this.id});
+  gameScreen({super.key, required this.currentGame, required this.id, required this.daily});
 
   @override
   State<gameScreen> createState() => _gameScreenState();
@@ -23,19 +24,18 @@ class _gameScreenState extends State<gameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (init) {
+    // if (init) {
       thisGame = widget.currentGame;
       for (int i = 0; i < thisGame.wlength; i++) {
-        if (wordBreakdown.containsKey(thisGame.word.substring(i, i + 1))) {
-          wordBreakdown[thisGame.word.substring(i, i + 1)]++;
-        } else {
+        if (!wordBreakdown.containsKey(thisGame.word.substring(i, i + 1))) {
           wordBreakdown[thisGame.word.substring(i, i + 1)] = 1;
+        } else {
+          wordBreakdown[thisGame.word.substring(i, i + 1)]++;
         }
       }
-      init = false;
-    }
-    print(thisGame.gused.toString());
-    print(thisGame.glength.toString());
+      // init = false;
+    // }
+    print('END INIT');
     return thisGame.active
         ? SafeArea(
             child: Scaffold(
@@ -102,13 +102,19 @@ class _gameScreenState extends State<gameScreen> {
                 title: Text('WordGameWithPals!'),
                 centerTitle: true,
               ),
-              body: Center(
-                child: Column(
-                  children: [
-                    Text(thisGame.win ? "You won!" : "You lost!"),
-                    Text('Word was: ${thisGame.word}'),
-                  ],
-                ),
+              body: Column(
+                children: [
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(thisGame.win ? "You won!" : "You lost!"),
+                        Text('Word was: ${thisGame.word}'),
+                      ],
+                    ),
+                  ),
+                //implement copy/paste
+                //   createShareable();
+                ],
               ),
             ),
           );
@@ -127,14 +133,24 @@ class _gameScreenState extends State<gameScreen> {
         String textToShow = '';
         if (j < thisGame.gused) {
           textToShow = thisGame.guesses[j].toString().substring(i, i + 1);
-          print("Text to show: $textToShow");
-          print(thisGame.word);
+          print('TEXT TO SHOW: ' + textToShow);
+
           if (textToShow == thisGame.word.substring(i, i + 1)) {
             gr = true;
-            temp.update(thisGame.word.substring(i, i + 1), (value) => value = value-1);
+            temp.update(thisGame.word.substring(i, i + 1),
+                (value) => value = value - 1);
+            print(
+                j.toString() + temp.toString() + " GR: ${thisGame.word.substring(i, i + 1)}");
           } else if (thisGame.word.contains(textToShow)) {
-            temp.update(thisGame.word.substring(i, i + 1), (value) => value = value-1);
-            if(temp[thisGame.word.substring(i,i+1)] >0  ){yl = true;}
+
+            if (temp[textToShow] > 0) {
+              yl = true;
+              print(
+                  j.toString() + temp.toString() + " YL: ${i}");
+              temp.update(textToShow,
+                      (value) => value = value - 1);
+            }
+
           }
         } else if (j == thisGame.gused) {
           textToShow = '*';
@@ -143,10 +159,14 @@ class _gameScreenState extends State<gameScreen> {
             textToShow = thisGame.guesses[j].substring(i, i + 1);
             if (textToShow == thisGame.word.substring(i, i + 1)) {
               gr = true;
-              temp.update(thisGame.word.substring(i, i + 1), (value) => value = value-1);
+              temp.update(thisGame.word.substring(i, i + 1),
+                  (value) => value = value - 1);
             } else if (thisGame.word.contains(textToShow)) {
-              temp.update(thisGame.word.substring(i, i + 1), (value) => value = value-1);
-              if(temp[thisGame.word.substring(i,i+1)] >0  ){yl = true;}
+              temp.update(thisGame.word.substring(i, i + 1),
+                  (value) => value = value - 1);
+              if (temp[thisGame.word.substring(i, i + 1)] > 0) {
+                yl = true;
+              }
             }
           } else {
             textToShow = '';
@@ -161,7 +181,7 @@ class _gameScreenState extends State<gameScreen> {
             color: gr
                 ? Colors.green
                 : yl
-                    ? Colors.yellow
+                    ? Colors.yellow[800]
                     : Colors.white38,
             border: Border.all(color: Colors.black),
             borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -196,7 +216,11 @@ class _gameScreenState extends State<gameScreen> {
     if (sv.guesses.length == widget.currentGame.glength) {
       sv.active = false;
     }
+    print('SAveINGuess');
     save().saveGame(sv, widget.id);
+    if(!sv.active && widget.daily){
+      save().saveDaily(sv,sv.challenged);
+    }
     setState(() {
       thisGame = sv;
     });

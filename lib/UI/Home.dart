@@ -1,8 +1,9 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wordgamewithpals/BLoC/daillyGameGenerator.dart';
 import 'package:wordgamewithpals/Login.dart';
 import 'package:wordgamewithpals/UI/ActiveGames.dart';
-import 'package:wordgamewithpals/UI/DailyChallenge.dart';
 import 'package:wordgamewithpals/UI/InactiveGames.dart';
 import 'package:wordgamewithpals/UI/NewGame.dart';
 import 'package:wordgamewithpals/UI/Profile.dart';
@@ -10,6 +11,7 @@ import 'package:wordgamewithpals/dbAccess/load.dart';
 
 import '../model/game.dart';
 import 'Settings.dart';
+import 'gameScreen.dart';
 
 class Home extends StatefulWidget {
   final String user;
@@ -29,14 +31,19 @@ class _HomeState extends State<Home> {
   bool notifs = false;
   String itemName = '';
 
+  game todaysGame =
+      game('word', 0, 0, 0, false, false, '', 'challenged', 'creator', []);
+
   void getOldGames() async {
     oldGames = await load().getGames(this.widget.user, false);
     oldChallenges = await load().getChallenges(this.widget.user, false);
   }
 
   void getGames() async {
+    // dailyGameGenerator().generateDailys();
     games = await load().getGames(this.widget.user, true);
     ids = await load().getIds(this.widget.user);
+    todaysGame = await dailyGameGenerator().getThisUsersGame(this.widget.user);
     if (games.length > 0) {
       setState(() {
         notifs = true;
@@ -60,32 +67,37 @@ class _HomeState extends State<Home> {
     return Scaffold(
         appBar: AppBar(
           toolbarHeight: 100,
+          backgroundColor: Colors.black,
           leading: IconButton(
               icon: Icon(Icons.login_outlined),
               onPressed: () {
                 logout(context);
               }),
-          bottom: PreferredSize(
-              preferredSize: Size.fromHeight(50),
-              child: Center(
-                child: Text(itemName),
-              )),
-          title: Text('Welcome ${widget.user}'),
+
+          // title: Text('Welcome ${widget.user}'),
+          title: TextLiquidFill(
+            text: 'WELCOME ${widget.user}',
+            waveColor: Colors.greenAccent,
+            boxBackgroundColor: Colors.black,
+            textStyle: TextStyle(
+                fontSize: 40, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+          ),
           centerTitle: true,
         ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(height: 100),
 
-            children: [              SizedBox(height: 100),
+              // ElevatedButton(onPressed:(){
+              //   Navigator.push(context,
+              //       MaterialPageRoute(builder: (context) =>
+              //           gameScreen(currentGame: todaysGame, daily: true, id: 99,)));
+              //
+              // }
 
-              ElevatedButton(onPressed:(){
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => DailyChallenge(user: widget.user)));
-
-              }
-
-                  , child: Text('Daily Challenge')),
+                  // , child: Text('Daily Challenge')),
               SizedBox(height: 100),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -103,8 +115,10 @@ class _HomeState extends State<Home> {
                     },
                     child: IconButton(
                         onPressed: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => NewGame()));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => NewGame()));
                         },
                         icon: Icon(Icons.add_circle_outline)),
                   ),
@@ -143,8 +157,10 @@ class _HomeState extends State<Home> {
                       icon: Icon(Icons.drive_folder_upload)),
                   IconButton(
                       onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => Settings()));
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Settings()));
                       },
                       icon: Icon(Icons.settings_applications_outlined)),
                   IconButton(
@@ -152,7 +168,8 @@ class _HomeState extends State<Home> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => Profile(user: widget.user)));
+                                builder: (context) =>
+                                    Profile(user: widget.user)));
                       },
                       icon: Icon(Icons.person_2_outlined)),
                 ],

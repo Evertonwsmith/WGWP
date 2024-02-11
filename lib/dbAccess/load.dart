@@ -1,20 +1,28 @@
-import 'dart:js_interop';
+import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:wordgamewithpals/model/dailyGame.dart';
 import 'package:wordgamewithpals/model/game.dart';
 import 'package:wordgamewithpals/model/userLeaderboard.dart';
 
 class load {
-  Future<DocumentReference?> generalLoad(String collection,
-      String document) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DocumentReference newRef = firestore.collection(collection).doc(document);
-    newRef.get().then((value) =>
-        () {
-      return value.get('user') == null ? null : value;
-    });
+  Future<Map<String, dynamic>?> generalLoad(String document) async {
+    Map<String, dynamic> data = {};
+    List<String> list = document.split('/');
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    var docRef = db.collection(list[0]).doc(list[1]);
+    docRef.get().then((value) => data = value.data() as Map<String, dynamic>);
+
+    return data == null ? null : data;
   }
+
+  // print("Doc: $document");
+  // DatabaseReference ref = FirebaseDatabase.instance.ref(document);
+  // DataSnapshot snapshot = (await ref.once()) as DataSnapshot;
+  // if (snapshot.value != null && snapshot.value is Map<dynamic, dynamic>) {
+  //   return Map<String, dynamic>.from(snapshot.value as Map<dynamic, dynamic>);
+  // } else {
+  //   return null;
+  // }
 
   Future<int> getGameCount() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -136,6 +144,10 @@ class load {
     try {
       DocumentSnapshot snapshot = await newRef.get();
       if (snapshot.exists) {
+        print(snapshot.get('wins'));
+        print(snapshot.get('losses'));
+        print(snapshot.get('points'));
+        print(snapshot.get('dailyChallenges'));
         return userLBInfo(
           snapshot.get('user'),
           snapshot.get('wins'),
@@ -152,26 +164,29 @@ class load {
     }
   }
 
+  Future<game> getDailyGame(String user) async {
+    {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      var newRef = firestore.collection('dailyChallenge').doc(
+          DateTime.now().toString().substring(0, 10)).collection(user);
+      var th = await newRef.snapshots().toList();
+      var ret = th[0];
 
-  Future<dailyGame?> getDailyGame() async{
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    print("*********************"+DateTime.now().toString().substring(0,10));
-    DocumentReference newRef = firestore.collection('dailyChallenge').doc(DateTime.now().toString().substring(0,10));
-
-    try {
-      DocumentSnapshot doc = await newRef.get();
-      if (doc.exists) {
-        return dailyGame(
+      List<game> games = ret.docs.map((doc) {
+        // Convert each document to a Game object
+        return game(
             doc.get('word'),
-            doc.get('winners'),
-            doc.get('losers'),
-        doc.get('guesses'));
-      } else {
-        return null;
-      }
-    } catch (e) {
-      print('Error loading user: $e');
-      return null;
+            doc.get('wlength'),
+            doc.get('glength'),
+            doc.get('gused'),
+            doc.get('win'),
+            doc.get('active'),
+            doc.get('date'),
+            doc.get('challenged'),
+            doc.get('creator'),
+            doc.get('guesses'));
+      }).toList();
+
+      return games[0];
     }
-  }
-}
+  }}

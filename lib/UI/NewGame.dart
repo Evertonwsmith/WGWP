@@ -56,6 +56,7 @@ class _NewGameState extends State<NewGame> {
     return Scaffold(
       appBar: AppBar(
         title: Text('New Game'),
+        centerTitle: true,
       ),
       body: Center(
         child: Container(
@@ -63,6 +64,7 @@ class _NewGameState extends State<NewGame> {
           child: Form(
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Text('How Many Guesses?'),
+              SizedBox(height: 20),
               TextField(
                 textAlign: TextAlign.center,
                 keyboardType: TextInputType.number,
@@ -78,13 +80,16 @@ class _NewGameState extends State<NewGame> {
                   LengthLimitingTextInputFormatter(1),
                 ],
               ),
+              SizedBox(height: 50),
               Text('Enter your word, between 4 and 6 letters'),
+              SizedBox(height: 10),
               TextField(
                 textAlign: TextAlign.center,
                 keyboardType: TextInputType.text,
                 controller: word,
               ),
-              SizedBox(height: 10),
+              SizedBox(height: 50),
+              Text('Who do you challenge?'),
               loaded
                   ? DropdownMenu(
                       dropdownMenuEntries: items,
@@ -93,7 +98,7 @@ class _NewGameState extends State<NewGame> {
                   : CircularProgressIndicator(),
               SizedBox(height: 10),
               IconButton(
-                  icon: Icon(Icons.send_time_extension_outlined),
+                  icon: Icon(Icons.send_time_extension_outlined,color: Colors.greenAccent),
                   onPressed: () {
                     if (int.parse(guessLength.text) < 3 ||
                         int.parse(guessLength.text) > 7) {
@@ -119,7 +124,8 @@ class _NewGameState extends State<NewGame> {
                       sendNewGame(context, int.parse(guessLength.text), word.text,
                           drdnController.text);
                     }
-                  })
+                  }),
+              Text('Send Challenge')
             ]),
           ),
         ),

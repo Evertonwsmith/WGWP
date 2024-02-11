@@ -24,7 +24,7 @@ class ActiveGames extends StatelessWidget {
                 "/" +
                 games[index].glength.toString()),
             leading: IconButton(icon: Icon(Icons.stars_outlined), onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) => gameScreen(currentGame: games[index], id: ids[index])));
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => gameScreen(currentGame: games[index], id: ids[index],daily: false)));
             },),
           );
         },

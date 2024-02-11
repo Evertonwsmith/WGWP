@@ -1,16 +1,37 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wordgamewithpals/dbAccess/load.dart';
-import 'package:wordgamewithpals/model/dailyGame.dart';
 import 'package:wordgamewithpals/model/game.dart';
-import 'package:wordgamewithpals/model/userLeaderboard.dart';
 
 class save {
-  Future<void> generalSave(
-      String collection, String document, Map<String, dynamic> data) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    QuerySnapshot ref = await firestore.collection(collection).get();
-    DocumentReference newRef = firestore.collection(collection).doc(document);
-    await newRef.set(data);
+  Future<void> generalSave(String document, Map<String, dynamic> data) async {
+    print('saving');
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    List<String> path = document.split('/');
+    print('path: ' + path.toString());
+    print('data: ' + data.toString());
+    if (path.length == 1) {
+      db.collection(document).add(data);
+      print('saved 1');
+    } else {
+      try {
+        db.collection(path[0]).doc(path[1]).update(data);
+        print('saved 2');
+      } catch (e) {
+        db.collection(path[0]).doc(path[1]).set(data);
+        print('saved 3');
+      }
+    }
+  }
+
+  Future<void> generalUpdate(String document, Map<String, dynamic> data) async {
+    print("updating");
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    List<String> list = document.split('/');
+    print(list.toString());
+
+    print(data.toString());
+    await db.collection(list[0]).doc(list[1]).update(data);
+    print("updated");
   }
 
   Future<void> saveGame(game game, int gamenum) async {
@@ -19,9 +40,9 @@ class save {
     if (gamenum == -1) {
       gamenum = gameCount;
     }
-
+    print('saving game');
     if (!game.active) {
-      updateLeaderboards(game, firestore);
+      updateLeaderboards(game);
     }
 
     try {
@@ -44,70 +65,53 @@ class save {
     }
   }
 
-  Future<void> saveDaily(String user, dailyGame sv) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DocumentReference newRef = await firestore
-        .collection('dailyChallenge')
-        .doc(DateTime.now().toString().substring(0, 10));
-    DocumentSnapshot doc = await newRef.get();
-    List<String> winners = doc.get('winners');
-    List<String> losers = doc.get('losers');
-    // if (!sv.active) {
-    //   sv.win ? winners.add(user) : losers.add(user);
-    //   // doc.set({'winners', winners});
-    //   await firestore.collection('dailyChallenge').doc(DateTime.now().toString().substring(0,10)).set({
-    //     'winners' : winners,
-    //     'losers' : losers,
-    //   });
-  }
-}
+  void saveDaily(game sv, String challenged) {
+    Map<String,dynamic> data = {
+      'word': sv.word,
+      'wlength': sv.wlength,
+      'glength': sv.glength,
+      'gused': sv.gused,
+      'win': sv.win,
+      'active': sv.active,
+      'date': sv.date,
+      'challenged': sv.challenged,
+      'creator': sv.creator,
+      'guesses': sv.guesses
 
-Future<void> updateLeaderboards(game game, FirebaseFirestore firestore) async {
-  QuerySnapshot querySnapshot = await firestore
-      .collection('leaderboard')
-      .where('user', isEqualTo: game.challenged)
-      .get();
-  // Get data from the snapshot
-  if (querySnapshot.size == 0) {
-    await firestore.collection('leaderboard').doc(game.challenged).set({
-      'user': game.challenged,
-      'wins': 0,
-      'losses': 0,
-      'points': 0,
-      'dailyChallenges': 0
-    });
-    querySnapshot = await firestore
-        .collection('leaderboard')
-        .where('user', isEqualTo: game.challenged)
-        .get();
+    };
+    generalSave('dailyChallenge/'+DateTime.now().toString().substring(0,10)+'/${sv.challenged}', data);
   }
-  List<userLBInfo> userLBinfos = querySnapshot.docs.map((doc) {
-    return userLBInfo(doc.get('user'), doc.get('wins'), doc.get('losses'),
-        doc.get('points'), doc.get('dailyChallenges'));
-  }).toList();
-  userLBInfo current = userLBinfos[0];
-  if (game.win) {
-    current.wins++;
-    switch (game.wlength) {
-      case 4:
-        current.points += 10;
-        break;
-      case 5:
-        current.points += 15;
-        break;
-      case 6:
-        current.points += 20;
-        break;
 
-        break;
-      default:
+
+
+Future<void> updateLeaderboards(game game) async {
+  print('updating leaderboards');
+  try {
+    Map<String, dynamic>? current =
+        await load().generalLoad('leaderboard/' + game.challenged);
+    print('current: ' + current.toString());
+
+    if (current != null) {
+      // Update if loss
+      if (!game.win) {
+        print('loss');
+        int losses = current['losses'] ?? 0;
+        int points = current['points'] ?? 0;
+        save().generalUpdate('leaderboard/' + game.challenged,
+            {'losses': losses + 1, 'points': points + 1});
+      }
+      // Update if win
+      else {
+        print('win');
+        int wins = current['wins'] ?? 0;
+        int points = current['points'] ?? 0;
+        save().generalUpdate('leaderboard/' + game.challenged,
+            {'wins': wins + 1, 'points': points + 10});
+      }
+    } else {
+      print('Document not found');
     }
-  } else {
-    current.losses++;
-    current.points += 1;
+  } catch (e) {
+    print('Error updating leaderboards: $e');
   }
-  await firestore
-      .collection('leaderboard')
-      .doc(game.challenged)
-      .set({'points': current.points});
-}
+}}
